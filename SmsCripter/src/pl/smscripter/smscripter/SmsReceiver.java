@@ -60,10 +60,16 @@ public class SmsReceiver extends BroadcastReceiver
                 wholeBody += body;
             }
             if (RSACryptor.isEncrypted(wholeBody)) {
-	            String decryptedBody = RSACryptor.decryptFromString(passPhrase, keyFile, encryptedText)(wholeBody);
-	            Log.i("BroadcastReceiver.onReceive", "Received: " + decryptedBody);
-	            putSmsToDatabase(contentResolver, sms, decryptedBody);
-	            this.abortBroadcast();
+	            String decryptedBody;
+				try {
+					decryptedBody = RSACryptor.decryptFromString(null, null, null);
+		            Log.i("BroadcastReceiver.onReceive", "Received: " + decryptedBody);
+		            putSmsToDatabase(contentResolver, sms, decryptedBody);
+		            this.abortBroadcast();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             }
         }
 	}
