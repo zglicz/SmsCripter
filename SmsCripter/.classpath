@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="lib" path="C:/Users/zglicz/Dropbox/studia/semestr V/BSK/SmsCripter/libs/bcpg-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zglicz/Dropbox/studia/semestr V/BSK/SmsCripter/libs/bcprov-jdk15on-147.jar"/>
+	<classpathentry kind="lib" path="C:/Users/zglicz/Dropbox/studia/semestr V/BSK/SmsCripter/libs/jsoup-1.7.1.jar"/>
+	<classpathentry kind="output" path="bin/classes"/>
+</classpath>

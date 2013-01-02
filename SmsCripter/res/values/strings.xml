@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SmsCripter</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="menu_settings">Settings</string>
+    <string name="input_phone_number">Podaj numer</string>
+    <string name="input_body">Wpisz wiadomosc</string>
+    <string name="send_button">Wyślij</string>
+    <string name="generate_key">Generate Key</string>
+    <string name="rsa_identity">Identity</string>
+    <string name="rsa_pass_phrase">pass phrase</string>
+    <string name="contact_picker">Wybierz kontakt</string>
+    <string name="contact_not_picked">Nie wybrano kontaktu, bądź wybrany kontakt nie posiada numeru telefonu</string>
+    <string name="private_key_missing">Nie znaleziono klucza prywatnego</string>
+    <string name="options">Opcje</string>
+    <string name="cancel">Anuluj</string>
+</resources>
