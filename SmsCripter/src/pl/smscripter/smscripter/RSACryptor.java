@@ -21,6 +21,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Iterator;
+
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPCompressedData;
@@ -42,6 +43,8 @@ import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
 import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPUtil;
 
+import android.util.Log;
+
 /**
  *
  * @author zglicz
@@ -51,7 +54,6 @@ import org.bouncycastle.openpgp.PGPUtil;
  */
 public class RSACryptor {
     // Location of public/private keys
-
     final static String FILE_PATH = "/sdcard/";
     final static String SECRET_KEY = "secret.asc";
     final static String PUBLIC_KEY = "public.asc";
@@ -79,7 +81,7 @@ public class RSACryptor {
                 PGPSignature.DEFAULT_CERTIFICATION, PGPPublicKey.RSA_GENERAL,
                 publicKey, privateKey,
                 new Date(),
-                identity, PGPEncryptedData.CAST5, passPhrase,
+                identity, PGPEncryptedData.AES_128, passPhrase,
                 null, null, new SecureRandom(), "BC");
         secretKey.encode(secretOut);
         secretOut.close();
@@ -117,12 +119,12 @@ public class RSACryptor {
 
     private static void dumpKeyPair(KeyPair keyPair) {
         PublicKey pub = keyPair.getPublic();
-        //Log.i("Public Key:" + getHexString(pub.getEncoded()));
-        System.out.println("Public Key:" + getHexString(pub.getEncoded()));
+        Log.i("Public Key:", getHexString(pub.getEncoded()));
+        //System.out.println("Public Key:" + getHexString(pub.getEncoded()));
 
         PrivateKey priv = keyPair.getPrivate();
-        //Log.i("Private Key", getHexString(priv.getEncoded()))
-        System.out.println("Private Key:" + getHexString(priv.getEncoded()));
+        Log.i("Private Key", getHexString(priv.getEncoded()));
+        //System.out.println("Private Key:" + getHexString(priv.getEncoded()));
     }
     
     public static boolean existsKeyPair() {
@@ -282,7 +284,7 @@ public class RSACryptor {
         comData.close();
 
         PGPEncryptedDataGenerator cPk = new PGPEncryptedDataGenerator(
-                PGPEncryptedData.CAST5, withIntegrityCheck, new SecureRandom(),
+                PGPEncryptedData.AES_128, withIntegrityCheck, new SecureRandom(),
                 "BC");
 
         cPk.addMethod(encKey);
@@ -340,7 +342,7 @@ public class RSACryptor {
         Security.addProvider(new BouncyCastleProvider());
         byte[] original = inputText.getBytes();
         byte[] encrypted = encrypt(original, readPublicKey(keyInputStream), null, true, true);
-        return strip(new String(encrypted));
+        return PREFIX + strip(new String(encrypted));
     }
 
     /**
@@ -354,7 +356,7 @@ public class RSACryptor {
      */
     public static String decryptFromString(String passPhrase, String keyFile, String encryptedText) throws Exception {
         Security.addProvider(new BouncyCastleProvider());
-        byte[] encFromString = encryptedText.getBytes();
+        byte[] encFromString = encryptedText.substring(PREFIX.length()).getBytes();
         FileInputStream secKey = new FileInputStream(keyFile);
         byte[] decrypted = decrypt(encFromString, secKey, passPhrase.toCharArray());
         return new String(decrypted);

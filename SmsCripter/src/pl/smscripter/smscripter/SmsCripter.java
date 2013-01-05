@@ -1,14 +1,23 @@
 package pl.smscripter.smscripter;
 
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.ContactsContract;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,11 +28,17 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class SmsCripter extends Activity {
+	public static String KEY_SERVER_UPLOAD = "http://www.rediris.es/keyserver/";
+    private static String KEY_SERVER_ADDRESS = "http://pgp.rediris.es:11371";
+    private static String CHARSET = "UTF-8";
 
 	// Menu items' Id's
 	final static int CONTACT_NOT_PICKED = 0;
 	final static int GENERATE_KEY_BUTTON = 1;
 	final static int PRIVATE_KEY_MISSING = 2;
+	final static int SEARCH_KEY_BUTTON = 3;
+	final static int PUBLIC_KEY_MISSING = 4;
+	final static int UPLOAD_PUBLIC_KEY = 5;
 
 	// Intent result Id
 	final static int CONTACT_PICKER_RESULT = 1001;
@@ -31,6 +46,7 @@ public class SmsCripter extends Activity {
 	// Picked contact
 	private String phoneNumber = "";
 	private String personName = "";
+	public String publicKey = null;
 	private boolean isPicked;
 
 	@Override
@@ -106,7 +122,11 @@ public class SmsCripter extends Activity {
 				showDialog(PRIVATE_KEY_MISSING);
 				return ;
 			}
-			String encryptedBody = RSACryptor.encryptToStringKeyFromFile(body, RSACryptor.publicPath());
+			if (publicKey == null) {
+				showDialog(PUBLIC_KEY_MISSING);
+				return ;
+			}
+			String encryptedBody = RSACryptor.encryptToStringKeyFormString(body, publicKey);
 			Uri uri = Uri.parse("smsto:" + phoneNumber);
 			Intent intent = new Intent(Intent.ACTION_SENDTO, uri);
 			intent.putExtra("sms_body", encryptedBody);
@@ -122,7 +142,17 @@ public class SmsCripter extends Activity {
 			case R.id.generate_key:
 				showDialog(GENERATE_KEY_BUTTON);
 				break;
-			}
+			case R.id.upload_public_key:
+				showDialog(UPLOAD_PUBLIC_KEY);
+				break;
+			case R.id.search_key:
+				if (!isPicked) {
+					showDialog(CONTACT_NOT_PICKED);
+				} else {
+					showDialog(SEARCH_KEY_BUTTON);
+				}
+				break;
+		}
 		return super.onMenuItemSelected(featureId, item);
 	}
 
@@ -134,44 +164,117 @@ public class SmsCripter extends Activity {
 			case GENERATE_KEY_BUTTON:
 				LayoutInflater inflater = getLayoutInflater();
 				final View textEntryView = inflater.inflate(R.layout.rsa_gen, null);
-	
-				alert.setTitle(R.string.options);
-				alert.setView(textEntryView);
 				final EditText identity = (EditText) textEntryView.findViewById(R.id.rsa_identity);
 				final EditText passPhrase = (EditText) textEntryView.findViewById(R.id.rsa_pass_phrase);
-				alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							try{
-								// TODO: change to BouncyCastle implementation
-								String inputIdentity = identity.getText().toString();
-								String inputPassPhrase = passPhrase.getText().toString();
-								RSACryptor.generateBCKeyPair(inputIdentity, inputPassPhrase);
-							} catch (Exception e) {
-								Toast.makeText(SmsCripter.this, "Error while generating", Toast.LENGTH_LONG).show();
-								e.printStackTrace();
-								return ;
+				
+				alert
+					.setTitle(R.string.options)
+					.setView(textEntryView)
+					.setPositiveButton("OK",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								try{
+									String inputIdentity = identity.getText().toString();
+									String inputPassPhrase = passPhrase.getText().toString();
+									RSACryptor.generateBCKeyPair(inputIdentity, inputPassPhrase);
+								} catch (Exception e) {
+									Toast.makeText(SmsCripter.this, "Error while generating", Toast.LENGTH_LONG).show();
+									e.printStackTrace();
+									return ;
+								}
+								Toast.makeText(SmsCripter.this, "Succesfully generated", Toast.LENGTH_LONG).show();
 							}
-							Toast.makeText(SmsCripter.this, "Succesfully generated", Toast.LENGTH_LONG).show();
-						}
-					})
+						})
 					.setNegativeButton(R.string.cancel, null);
 				break;
 			case CONTACT_NOT_PICKED:
 				alert.setMessage(R.string.contact_not_picked);
 				break;
 			case PRIVATE_KEY_MISSING:
-				alert.setMessage(R.string.private_key_missing);
-				alert.setPositiveButton("Wygeneruj klucz", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						showDialog(GENERATE_KEY_BUTTON);
-					}
-				})
-				.setNegativeButton(R.string.cancel, null);
+				alert
+					.setMessage(R.string.private_key_missing)
+					.setPositiveButton("Wygeneruj klucz", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							showDialog(GENERATE_KEY_BUTTON);
+						}
+					})
+					.setNegativeButton(R.string.cancel, null);
+				break;
+			case SEARCH_KEY_BUTTON:
+				final EditText identityText = new EditText(this);
+				alert
+					.setTitle("Szukamy klucza")
+					.setMessage(R.string.search_key_dialog)
+					.setView(identityText)
+					.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							String identity = identityText.getText().toString();
+							new KeyServerTask().execute(identity);
+						}
+					});
+				break;
+			case PUBLIC_KEY_MISSING:
+				alert.setMessage(R.string.public_key_missing);
+				break;
+			case UPLOAD_PUBLIC_KEY:
+				alert
+					.setMessage(R.string.upload_key_message)
+					.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+						    android.text.ClipboardManager clipboard =
+						    		(android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+						    clipboard.setText(Util.readFileAsString(RSACryptor.publicPath()));
+							Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(KEY_SERVER_UPLOAD));
+							startActivity(intent);
+						}
+					});
+				break;
 		}
 		dialog = alert.create();
 		return dialog;
 	}
 
+	class KeyServerTask extends AsyncTask<String, Integer, String> {
+	    private String createUrlQuery(String identity) throws UnsupportedEncodingException {
+	        StringBuilder urlAddress = new StringBuilder();
+	        urlAddress.append(KEY_SERVER_ADDRESS);
+	        urlAddress.append("/pks/lookup?");
+	        urlAddress.append("search="); urlAddress.append(URLEncoder.encode(identity, CHARSET));
+	        return urlAddress.toString();
+	    }
+
+		@Override
+		protected String doInBackground(String... params) {
+			String identity = params[0];
+			try {
+	            String address = createUrlQuery(identity);
+	            Document doc = Jsoup.connect(address).get();
+	            
+	            // if connect didn't throw 404 it means a key was found
+	            // we assume there is always at least one key
+	            String linkHref = doc.getElementsByTag("a").first().attr("abs:href");
+	            doc = Jsoup.connect(linkHref).get();
+	            
+	            // we assume that there is at least 1 one link, we pick the first/newest one.
+	            String key = doc.getElementsByTag("pre").first().text();
+	            return key;
+	        } catch (IOException ex) {
+	            return null;
+	        }
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			if (result == null) {
+				Toast.makeText(SmsCripter.this, "Key not found", Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(SmsCripter.this, "Key succesfully downloaded", Toast.LENGTH_LONG).show();
+				((SmsCripter) SmsCripter.this).publicKey = result;
+			}
+		}
+	}
 }
