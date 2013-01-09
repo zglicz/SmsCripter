@@ -1,16 +1,15 @@
 package pl.smscripter.smscripter;
 
-import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
+import android.text.InputType;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	public static final String MESSAGE = "MAIN_ACTIVITY_MESSAGE";
@@ -23,7 +22,6 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
@@ -36,6 +34,7 @@ public class MainActivity extends Activity {
 	public void smsListStart(View view) {
 		AlertDialog.Builder alert = new AlertDialog.Builder(this);
 		final EditText passPhraseText = new EditText(this);
+		passPhraseText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 		alert
 			.setTitle(R.string.rsa_pass_phrase)
 			.setMessage(R.string.secret_key_pass_phrase)

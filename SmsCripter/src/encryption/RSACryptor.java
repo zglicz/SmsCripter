@@ -1,4 +1,4 @@
-package pl.smscripter.smscripter;
+package encryption;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -48,7 +48,7 @@ import android.util.Log;
 /**
  *
  * @author zglicz
- * duzo kodu wykorzystane z :
+ * duzo kodu do korzystania z bouncycastle :
  * http://stackoverflow.com/questions
  * 		/3939447/how-to-encrypt-a-string-stream-with-bouncycastle-pgp-without-starting-with-a-fil
  */
@@ -120,11 +120,9 @@ public class RSACryptor {
     private static void dumpKeyPair(KeyPair keyPair) {
         PublicKey pub = keyPair.getPublic();
         Log.i("Public Key:", getHexString(pub.getEncoded()));
-        //System.out.println("Public Key:" + getHexString(pub.getEncoded()));
 
         PrivateKey priv = keyPair.getPrivate();
         Log.i("Private Key", getHexString(priv.getEncoded()));
-        //System.out.println("Private Key:" + getHexString(priv.getEncoded()));
     }
     
     public static boolean existsKeyPair() {
@@ -158,20 +156,6 @@ public class RSACryptor {
         return pgpSecKey.extractPrivateKey(pass, "BC");
     }
 
-    /**
-     * decrypt the passed in message stream
-     * 
-     * @param encrypted
-     *            The message to be decrypted.
-     * @param passPhrase
-     *            Pass phrase (key)
-     * 
-     * @return Clear text as a byte array. I18N considerations are not handled
-     *         by this routine
-     * @exception IOException
-     * @exception PGPException
-     * @exception NoSuchProviderException
-     */
     private static byte[] decrypt(byte[] encrypted, InputStream keyIn, char[] password)
             throws IOException, PGPException, NoSuchProviderException {
         
@@ -180,18 +164,13 @@ public class RSACryptor {
         PGPObjectFactory pgpF = new PGPObjectFactory(in);
         PGPEncryptedDataList enc = null;
         Object o = pgpF.nextObject();
-        //
-        // the first object might be a PGP marker packet.
-        //
+
         if (o instanceof PGPEncryptedDataList) {
             enc = (PGPEncryptedDataList) o;
         } else {
             enc = (PGPEncryptedDataList) pgpF.nextObject();
         }
 
-        //
-        // find the secret key
-        //
         Iterator it = enc.getEncryptedDataObjects();
         PGPPrivateKey sKey = null;
         PGPPublicKeyEncryptedData pbe = null;
@@ -205,8 +184,7 @@ public class RSACryptor {
         }
 
         if (sKey == null) {
-            throw new IllegalArgumentException(
-                    "secret key for message not found.");
+            throw new IllegalArgumentException("secret key for message not found.");
         }
 
         InputStream clear = pbe.getDataStream(sKey, "BC");
@@ -225,32 +203,6 @@ public class RSACryptor {
         return returnBytes;
     }
 
-    /**
-     * Simple PGP encryptor between byte[].
-     * 
-     * @param clearData
-     *            The test to be encrypted
-     * @param passPhrase
-     *            The pass phrase (key). This method assumes that the key is a
-     *            simple pass phrase, and does not yet support RSA or more
-     *            sophisiticated keying.
-     * @param fileName
-     *            File name. This is used in the Literal Data Packet (tag 11)
-     *            which is really inly important if the data is to be related to
-     *            a file to be recovered later. Because this routine does not
-     *            know the source of the information, the caller can set
-     *            something here for file name use that will be carried. If this
-     *            routine is being used to encrypt SOAP MIME bodies, for
-     *            example, use the file name from the MIME type, if applicable.
-     *            Or anything else appropriate.
-     * 
-     * @param armor
-     * 
-     * @return encrypted data.
-     * @exception IOException
-     * @exception PGPException
-     * @exception NoSuchProviderException
-     */
     private static byte[] encrypt(byte[] clearData, PGPPublicKey encKey,
             String fileName, boolean withIntegrityCheck, boolean armor)
             throws IOException, PGPException, NoSuchProviderException {
@@ -270,9 +222,6 @@ public class RSACryptor {
         // destination
         PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
 
-        // we want to generate compressed data. This might be a user option
-        // later,
-        // in which case we would pass in bOut.
         OutputStream pOut = lData.open(cos, // the compressed output stream
                 PGPLiteralData.BINARY, fileName, // "filename" to store
                 clearData.length, // length of clear data

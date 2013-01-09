@@ -15,15 +15,17 @@
     <string name="private_key_missing">Nie znaleziono klucza prywatnego</string>
     <string name="options">Opcje</string>
     <string name="cancel">Anuluj</string>
-    <string name="search_key">Search Key</string>
+    <string name="search_key">Szukaj klucza</string>
     <string name="search_key_dialog">Wprowadz tozsamosc(identity) szukanego klucza</string>
     <string name="title_activity_sms_list">Lista SMS</string>
     <string name="sms_list">Lista SMS</string>
     <string name="send_sms">Wysylanie SMS</string>
     <string name="title_activity_sms_cripter">SmsSender</string>
     <string name="secret_key_pass_phrase">Podaj hasło do klucza prywatnego</string>
-    <string name="public_key_missing">Nie znaleziono klucza dla podanej tożsamości</string>
+    <string name="public_key_missing">Nie znaleziono klucza dla podanej tożsamości. Aby wysłać wiadomość do tej osoby musisz znależć klucz. Kliknij OK, aby kontynuować z wyszukiwaniem.</string>
     <string name="upload_public_key">Udostepnij klucz</string>
     <string name="upload_key_message">W celu udostepnienia klucza zostaniesz przeniesiony na strone z serwerem kluczy. Twój klucz został skopiowany do schowka. Proszę wkleić, następnie wcisnąć Submit.</string>
+    <string name="public_key_already_exists">Klucz publiczny dla tej osoby już istnieje. Czy chcesz użyć zapisanego klucza? Czy może ponownie chcesz wyszukać klucza?</string>
+    <string name="use_saved_public_key">Użyj zapamiętanego</string>
 
 </resources>

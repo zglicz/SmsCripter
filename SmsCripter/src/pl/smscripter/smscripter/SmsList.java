@@ -1,19 +1,19 @@
 package pl.smscripter.smscripter;
 
-import android.net.Uri;
-import android.os.Bundle;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListAdapter;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import encryption.RSACryptor;
 
 public class SmsList extends ListActivity implements OnItemClickListener {
 	public static final String ADDRESS = "address";
@@ -31,11 +31,11 @@ public class SmsList extends ListActivity implements OnItemClickListener {
 
 		Cursor cursor =
 				this.getContentResolver().query(Uri.parse(SMS_URI),
-						new String[] { "_id", "thread_id", "address", "person", "date", "body", "type" },
+						new String[] {"_id", "address", "date", "body"},
 						"body LIKE \'**********%\'", null, null);
 		startManagingCursor(cursor);
 
-		ListAdapter listAdapter = new SimpleCursorAdapter(
+		ListAdapter listAdapter = new SmsListAdapter(
 				this,
 				R.layout.sms_row_item,
 				cursor,
@@ -61,13 +61,13 @@ public class SmsList extends ListActivity implements OnItemClickListener {
 		try {
 			decipheredBody = RSACryptor.decryptFromString(passPhrase, RSACryptor.privatePath(), body);
 		} catch (Exception e) {
-			e.printStackTrace();
+			decipheredBody += "\n" + e;
 		}
 		alert.setMessage(
-				"From : " + origin +
-				"\nDate : " + date +
-				"\nBody : " + body.substring(0, 10) +
-				"\nDecB : " + decipheredBody);
+				  "Nadawca : " + origin +
+				"\nData : " + date +
+				"\nZaszyfrowane : " + body.substring(10, 25) +
+				"\nOdszyfrowane : " + decipheredBody);
 		Dialog dialog = alert.create();
 		dialog.show();
 	}

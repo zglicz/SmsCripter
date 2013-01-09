@@ -22,7 +22,8 @@
         android:theme="@style/AppTheme" >
         <activity
             android:name="pl.smscripter.smscripter.MainActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,11 +31,13 @@
         </activity>
         <activity
             android:name="pl.smscripter.smscripter.SmsList"
-            android:label="@string/title_activity_sms_list" >
+            android:label="@string/title_activity_sms_list"
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="pl.smscripter.smscripter.SmsCripter"
-            android:label="@string/title_activity_sms_cripter" >
+            android:label="@string/title_activity_sms_cripter"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 
