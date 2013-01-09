@@ -4,14 +4,12 @@ import tools.Util;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 public class SmsListAdapter extends SimpleCursorAdapter {
-	private static final String tag = "SmsListAdapter";
 	Cursor cursor;
 	Context context;
 	

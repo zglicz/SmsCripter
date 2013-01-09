@@ -7,7 +7,6 @@ import java.net.URLEncoder;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import pl.smscripter.smscripter.SmsCripter;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;

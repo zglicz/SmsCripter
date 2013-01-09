@@ -66,7 +66,7 @@ public class SmsList extends ListActivity implements OnItemClickListener {
 		alert.setMessage(
 				  "Nadawca : " + origin +
 				"\nData : " + date +
-				"\nZaszyfrowane : " + body.substring(10, 25) +
+				"\nZaszyfrowane : " + body.substring(10, 25) + "..." +
 				"\nOdszyfrowane : " + decipheredBody);
 		Dialog dialog = alert.create();
 		dialog.show();
