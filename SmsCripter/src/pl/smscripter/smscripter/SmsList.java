@@ -31,7 +31,7 @@ public class SmsList extends ListActivity implements OnItemClickListener {
 
 		Cursor cursor =
 				this.getContentResolver().query(Uri.parse(SMS_URI),
-						new String[] {"_id", "address", "date", "body"},
+						new String[] { "_id", "thread_id", "address", "person", "date", "body", "type"},
 						"body LIKE \'**********%\'", null, null);
 		startManagingCursor(cursor);
 
